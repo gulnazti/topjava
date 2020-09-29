@@ -6,7 +6,6 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -78,7 +77,7 @@ public class UserMealsUtil {
             private LocalTime startTime;
             private LocalTime endTime;
             private int caloriesPerDay;
-            private ConcurrentMap<LocalDate, Integer> caloriesMap;
+            private Map<LocalDate, Integer> caloriesMap;
 
             private MealsWithExcessCollector(LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
                 this.startTime = startTime;
