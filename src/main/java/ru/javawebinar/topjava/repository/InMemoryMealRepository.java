@@ -14,11 +14,11 @@ import ru.javawebinar.topjava.model.Meal;
 /**
  * @author gulnaz
  */
-public class MealRepositoryInMemoryImpl implements MealRepository {
-    private static AtomicInteger idCounter = new AtomicInteger(0);
-    private static Map<Integer, Meal> mealsMap = new ConcurrentHashMap<>();
+public class InMemoryMealRepository implements MealRepository {
+    private AtomicInteger idCounter = new AtomicInteger(0);
+    private Map<Integer, Meal> mealsMap = new ConcurrentHashMap<>();
 
-    static {
+    public InMemoryMealRepository() {
         List<Meal> mealList = Arrays.asList(
             new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500),
             new Meal(LocalDateTime.of(2020, Month.JANUARY, 30, 13, 0), "Обед", 1000),
@@ -29,11 +29,7 @@ public class MealRepositoryInMemoryImpl implements MealRepository {
             new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410)
         );
 
-        mealList.forEach(meal -> {
-            int id = idCounter.incrementAndGet();
-            meal.setId(id);
-            mealsMap.put(id, meal);
-        });
+        mealList.forEach(this::save);
     }
 
     @Override
@@ -47,15 +43,22 @@ public class MealRepositoryInMemoryImpl implements MealRepository {
     }
 
     @Override
-    public void save(Meal meal) {
-        if (meal.getId() != 0) {
+    public Meal save(Meal meal) {
+        int mealId = meal.getId();
+        if (mealId != 0) {
+            if (!mealsMap.containsKey(mealId)) {
+                return null;
+            }
+
             mealsMap.put(meal.getId(), meal);
         }
         else {
-            int id = idCounter.incrementAndGet();
-            meal.setId(id);
-            mealsMap.put(id, meal);
+            mealId = idCounter.incrementAndGet();
+            meal.setId(mealId);
+            mealsMap.put(mealId, meal);
         }
+
+        return meal;
     }
 
     @Override
