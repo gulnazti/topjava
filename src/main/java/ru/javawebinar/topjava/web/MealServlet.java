@@ -24,7 +24,7 @@ import static ru.javawebinar.topjava.util.MealsUtil.filteredByStreams;
  */
 public class MealServlet extends HttpServlet {
     private static final Logger log = getLogger(MealServlet.class);
-    private static final int CALORIES_PER_DAY = 2000;
+    private static final int caloriesPerDay = 2000;
     private MealRepository mealRepository;
 
     @Override
@@ -56,7 +56,7 @@ public class MealServlet extends HttpServlet {
     }
 
     private void list(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<MealTo> mealsTo = filteredByStreams(mealRepository.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY);
+        List<MealTo> mealsTo = filteredByStreams(mealRepository.getAll(), LocalTime.MIN, LocalTime.MAX, caloriesPerDay);
         request.setAttribute("meals", mealsTo);
 
         log.debug("redirect to meals");
@@ -68,11 +68,9 @@ public class MealServlet extends HttpServlet {
 
         LocalDateTime dateTime = LocalDateTime.parse(request.getParameter("datetime"));
         String description = request.getParameter("description");
-        int calories = Integer.parseInt(request.getParameter("calories"));
-        int id = parseId(request.getParameter("id"));
-        Meal meal = id != 0
-                    ? new Meal(id, dateTime, description, calories)
-                    : new Meal(dateTime, description, calories);
+        int calories = parseInt(request, "calories");
+        int id = parseInt(request, "id");
+        Meal meal = new Meal(id, dateTime, description, calories);
 
         log.debug("save meal");
         mealRepository.save(meal);
@@ -80,7 +78,7 @@ public class MealServlet extends HttpServlet {
     }
 
     private void getForm(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int id = parseId(request.getParameter("id"));
+        int id = parseInt(request, "id");
         Meal meal = id != 0
                     ? mealRepository.get(id)
                     : new Meal(LocalDateTime.of(LocalDate.now(), LocalTime.NOON), "", 1000);
@@ -91,18 +89,19 @@ public class MealServlet extends HttpServlet {
     }
 
     private void delete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        int id = Integer.parseInt(request.getParameter("id"));
+        int id = parseInt(request, "id");
 
         log.debug("delete meal with id={}", id);
         mealRepository.delete(id);
         response.sendRedirect("meals");
     }
 
-    private int parseId(String stringId) {
-        if (stringId == null || stringId.isEmpty()) {
+    private int parseInt(HttpServletRequest request, String param) {
+        String value = request.getParameter(param);
+        if (value == null || value.isEmpty()) {
             return 0;
         }
 
-        return Integer.parseInt(stringId);
+        return Integer.parseInt(value);
     }
 }

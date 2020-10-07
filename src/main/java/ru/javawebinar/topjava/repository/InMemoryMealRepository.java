@@ -46,19 +46,14 @@ public class InMemoryMealRepository implements MealRepository {
     public Meal save(Meal meal) {
         int mealId = meal.getId();
         if (mealId != 0) {
-            if (!mealsMap.containsKey(mealId)) {
-                return null;
-            }
-
-            mealsMap.put(meal.getId(), meal);
+            return mealsMap.replace(meal.getId(), meal) == null ? null : meal;
         }
         else {
             mealId = idCounter.incrementAndGet();
             meal.setId(mealId);
             mealsMap.put(mealId, meal);
+            return meal;
         }
-
-        return meal;
     }
 
     @Override
