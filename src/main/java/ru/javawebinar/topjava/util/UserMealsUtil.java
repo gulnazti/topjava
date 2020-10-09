@@ -74,15 +74,9 @@ public class UserMealsUtil {
 
     public static List<UserMealWithExcess> filteredByStreams2(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         class MealsWithExcessCollector implements Collector<UserMeal, Map<LocalDate, List<UserMeal>>, List<UserMealWithExcess>> {
-            private LocalTime startTime;
-            private LocalTime endTime;
-            private int caloriesPerDay;
             private Map<LocalDate, Integer> caloriesMap;
 
-            private MealsWithExcessCollector(LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-                this.startTime = startTime;
-                this.endTime = endTime;
-                this.caloriesPerDay = caloriesPerDay;
+            private MealsWithExcessCollector() {
                 this.caloriesMap = new ConcurrentHashMap<>();
             }
 
@@ -127,7 +121,7 @@ public class UserMealsUtil {
         }
 
         return meals.stream()
-            .collect(new MealsWithExcessCollector(startTime, endTime, caloriesPerDay));
+            .collect(new MealsWithExcessCollector());
     }
 
     private static UserMealWithExcess convertToMealWithExcess(UserMeal meal, boolean excess) {
