@@ -1,7 +1,8 @@
 package ru.javawebinar.topjava.service;
 
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 import ru.javawebinar.topjava.model.Meal;
@@ -19,7 +20,12 @@ public class MealService {
         this.repository = repository;
     }
 
-    public Meal save(Meal meal, int userId) {
+    public Meal create(Meal meal, int userId) {
+        Objects.requireNonNull(meal);
+        return repository.save(meal, userId);
+    }
+
+    public Meal update(Meal meal, int userId) {
         return checkNotFoundWithId(repository.save(meal, userId), meal.getId());
     }
 
@@ -32,11 +38,11 @@ public class MealService {
         return checkNotFoundWithId(repository.get(mealId, userId), mealId);
     }
 
-    public Collection<Meal> getAll(int userId) {
+    public List<Meal> getAll(int userId) {
         return repository.getAll(userId);
     }
 
-    public Collection<Meal> getFiltered(LocalDate startDate, LocalDate endDate, int userId) {
+    public List<Meal> getFiltered(LocalDate startDate, LocalDate endDate, int userId) {
         return repository.getFiltered(startDate, endDate, userId);
     }
 

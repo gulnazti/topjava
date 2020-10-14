@@ -1,8 +1,6 @@
 package ru.javawebinar.topjava.repository.inmemory;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -10,18 +8,26 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
+import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.repository.UserRepository;
-import ru.javawebinar.topjava.util.UserUtil;
+import ru.javawebinar.topjava.util.MealsUtil;
+
+import static ru.javawebinar.topjava.util.MealsUtil.ADMIN_ID;
+import static ru.javawebinar.topjava.util.MealsUtil.USER_ID;
 
 @Repository
 public class InMemoryUserRepository implements UserRepository {
     private static final Logger log = LoggerFactory.getLogger(InMemoryUserRepository.class);
     private final Map<Integer, User> repository = new ConcurrentHashMap<>();
-    private final AtomicInteger counter = new AtomicInteger(0);
+    private final AtomicInteger counter = new AtomicInteger(USER_ID);
 
     {
-        UserUtil.users.forEach(this::save);
+        List<User> users = Arrays.asList(
+            new User(ADMIN_ID, "admin", "admin@example.com", "admin", MealsUtil.DEFAULT_CALORIES_PER_DAY, true, EnumSet.of(Role.ADMIN)),
+            new User(USER_ID, "user", "user@example.com", "user", 2500, true, EnumSet.of(Role.USER))
+        );
+        users.forEach(this::save);
     }
 
     @Override

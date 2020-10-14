@@ -29,7 +29,8 @@
     <h3><a href="index.html">Home</a></h3>
     <hr/>
     <h2>Meals</h2>
-    <form method="get">
+    <form method="get" action="meals">
+        <input type="hidden" name="action" value="filter">
         <div class="row">
             <label for="startDate">Start Date</label>
             <input type="date" name="startDate" id="startDate" value="${param.startDate}">

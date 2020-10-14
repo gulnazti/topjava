@@ -1,7 +1,9 @@
 package ru.javawebinar.topjava.web;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import javax.servlet.ServletConfig;
@@ -16,6 +18,9 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.web.meal.MealRestController;
+
+import static ru.javawebinar.topjava.util.DateTimeUtil.parseDate;
+import static ru.javawebinar.topjava.util.DateTimeUtil.parseTime;
 
 public class MealServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
@@ -45,8 +50,13 @@ public class MealServlet extends HttpServlet {
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
 
-        log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
-        controller.save(meal);
+        if (meal.isNew()) {
+            log.info("Create {}", meal);
+            controller.create(meal);
+        } else {
+            log.info("Update {}", meal);
+            controller.update(meal);
+        }
         response.sendRedirect("meals");
     }
 
@@ -69,15 +79,22 @@ public class MealServlet extends HttpServlet {
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
-            case "all":
-            default:
-                log.info(request.getParameterMap().size() == 0 ? "getAll" : "getFiltered");
-                String startDate = request.getParameter("startDate");
-                String endDate = request.getParameter("endDate");
-                String startTime = request.getParameter("startTime");
-                String endTime = request.getParameter("endTime");
+            case "filter":
+                log.info("getFiltered");
+
+                LocalDate startDate = parseDate(request.getParameter("startDate"));
+                LocalDate endDate = parseDate(request.getParameter("endDate"));
+                LocalTime startTime = parseTime(request.getParameter("startTime"));
+                LocalTime endTime = parseTime(request.getParameter("endTime"));
 
                 request.setAttribute("meals", controller.getFiltered(startDate, endDate, startTime, endTime));
+                request.getRequestDispatcher("/meals.jsp").forward(request, response);
+                break;
+            case "all":
+            default:
+                log.info("getAll");
+
+                request.setAttribute("meals", controller.getAll());
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
         }
