@@ -33,12 +33,12 @@ public class InMemoryMealRepository implements MealRepository {
             return null;
         }
 
+        Map<Integer, Meal> meals = repository.computeIfAbsent(userId, ConcurrentHashMap::new);
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
-            repository.computeIfAbsent(userId, ConcurrentHashMap::new);
         }
 
-        repository.get(userId).merge(meal.getId(), meal, (old, updated) -> updated);
+        meals.merge(meal.getId(), meal, (old, updated) -> updated);
         return meal;
     }
 
