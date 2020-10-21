@@ -55,7 +55,7 @@ public class MealServlet extends HttpServlet {
             controller.create(meal);
         } else {
             log.info("Update {}", meal);
-            controller.update(meal);
+            controller.update(meal, meal.getId());
         }
         response.sendRedirect("meals");
     }

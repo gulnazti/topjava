@@ -1,6 +1,9 @@
 package ru.javawebinar.topjava.repository.inmemory;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -23,11 +26,10 @@ public class InMemoryUserRepository implements UserRepository {
     private final AtomicInteger counter = new AtomicInteger(USER_ID);
 
     {
-        List<User> users = Arrays.asList(
-            new User(ADMIN_ID, "admin", "admin@example.com", "admin", MealsUtil.DEFAULT_CALORIES_PER_DAY, true, EnumSet.of(Role.ADMIN)),
-            new User(USER_ID, "user", "user@example.com", "user", 2500, true, EnumSet.of(Role.USER))
-        );
-        users.forEach(this::save);
+        User admin = new User(ADMIN_ID, "admin", "admin@example.com", "admin", MealsUtil.DEFAULT_CALORIES_PER_DAY, true, EnumSet.of(Role.ADMIN));
+        User user = new User(USER_ID, "user", "user@example.com", "user", 2500, true, EnumSet.of(Role.USER));
+        repository.put(ADMIN_ID, admin);
+        repository.put(USER_ID, user);
     }
 
     @Override

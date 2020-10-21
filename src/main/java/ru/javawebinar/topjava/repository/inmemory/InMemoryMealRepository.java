@@ -23,7 +23,8 @@ public class InMemoryMealRepository implements MealRepository {
     private final AtomicInteger counter = new AtomicInteger(0);
 
     {
-        MealsUtil.meals.forEach(meal -> save(meal, meal.getUserId()));
+        MealsUtil.meals.subList(0, 7).forEach(meal -> save(meal, MealsUtil.ADMIN_ID));
+        MealsUtil.meals.subList(7, 9).forEach(meal -> save(meal, MealsUtil.USER_ID));
     }
 
     @Override
@@ -31,8 +32,6 @@ public class InMemoryMealRepository implements MealRepository {
         if (!meal.isNew() && get(meal.getId(), userId) == null) {
             return null;
         }
-
-        meal.setUserId(userId);
 
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
