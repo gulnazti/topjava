@@ -1,7 +1,10 @@
 package ru.javawebinar.topjava.service;
 
+import java.util.concurrent.TimeUnit;
+
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.rules.Stopwatch;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -23,14 +26,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public abstract class AbstractServiceTest {
     private static final Logger log = LoggerFactory.getLogger(AbstractServiceTest.class);
-    private static StringBuilder builder;
+    private static StringBuilder builder = new StringBuilder();
     private static long totalTime;
 
     @ClassRule
     public static TestWatcher timeSummaryLogger = new TestWatcher() {
         @Override
         protected void starting(Description description) {
-            builder = new StringBuilder();
+            builder.setLength(0);
             builder.append("\n").append(description.getTestClass().getSimpleName());
             totalTime = 0;
         }
@@ -43,36 +46,26 @@ public abstract class AbstractServiceTest {
     };
 
     @Rule
-    public TestWatcher timeLogger = new TestWatcher() {
-        private long startTime;
-
+    public Stopwatch timeLogger = new Stopwatch() {
         @Override
-        protected void starting(Description description) {
-            startTime = System.currentTimeMillis();
-        }
-
-        @Override
-        protected void finished(Description description) {
-            long delta = System.currentTimeMillis() - startTime;
-            totalTime += delta;
+        protected void finished(long nanos, Description description) {
+            long millis = TimeUnit.NANOSECONDS.toMillis(nanos);
+            totalTime += millis;
             String testName = description.getMethodName();
-            log.info(testName + " test took {} ms", delta);
-            appendDots(testName, delta);
+            log.info(testName + " test took {} ms", millis);
+            appendDots(testName, millis);
         }
     };
 
-    private static void appendDots(String rowName, long delta) {
-        builder.append("\n  ").append(rowName);
-        long seconds = delta / 1000;
+    private static void appendDots(String rowName, long millis) {
+        builder.append("\n  ");
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
         String timeResult = seconds > 0
-                            ? String.format("%d s %d ms", seconds, delta - seconds * 1000)
-                            : String.format("%d ms", delta);
+                            ? String.format("%d s %d ms", seconds, millis - TimeUnit.SECONDS.toMillis(seconds))
+                            : String.format("%d ms", millis);
 
         int targetLength = 50;
-        int appendLength = targetLength - rowName.length() - timeResult.length();
-        while (appendLength-- > 0) {
-            builder.append(".");
-        }
-        builder.append(timeResult);
+        String row = String.format("%-" + (targetLength - timeResult.length()) + "s", rowName).replaceAll(" ", ".");
+        builder.append(row).append(timeResult);
     }
 }
