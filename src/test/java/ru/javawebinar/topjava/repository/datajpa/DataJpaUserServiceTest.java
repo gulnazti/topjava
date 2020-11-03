@@ -7,6 +7,7 @@ import ru.javawebinar.topjava.service.AbstractUserServiceTest;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static ru.javawebinar.topjava.MealTestData.MEAL_MATCHER;
 import static ru.javawebinar.topjava.MealTestData.adminMeal1;
 import static ru.javawebinar.topjava.MealTestData.adminMeal2;
@@ -14,6 +15,7 @@ import static ru.javawebinar.topjava.Profiles.DATAJPA;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_MATCHER;
 import static ru.javawebinar.topjava.UserTestData.admin;
+import static ru.javawebinar.topjava.UserTestData.getNew;
 
 /**
  * @author gulnaz
@@ -31,5 +33,12 @@ public class DataJpaUserServiceTest extends AbstractUserServiceTest {
     @Test
     public void getWithMealsNotFound() {
         assertThrows(NotFoundException.class, () -> service.getWithMeals(1));
+    }
+
+    @Test
+    public void getWithNoMeals() {
+        User newUser = service.create(getNew());
+        User user = service.getWithMeals(newUser.getId());
+        assertTrue(user.getMeals().isEmpty());
     }
 }
