@@ -3,9 +3,9 @@ package ru.javawebinar.topjava.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import ru.javawebinar.topjava.repository.JpaUtil;
 import javax.validation.ConstraintViolationException;
 
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,13 +33,9 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     @Autowired
     private CacheManager cacheManager;
 
-    @Autowired
-    protected JpaUtil jpaUtil;
-
     @Before
     public void setUp() {
         cacheManager.getCache("users").clear();
-        jpaUtil.clear2ndLevelHibernateCache();
     }
 
     @Test
@@ -101,6 +97,7 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
     @Test
     public void createWithException() {
+        Assume.assumeFalse(isJdbcProfile());
         validateRootCause(() -> service.create(new User(null, "  ", "mail@yandex.ru", "password", Role.USER)), ConstraintViolationException.class);
         validateRootCause(() -> service.create(new User(null, "User", "  ", "password", Role.USER)), ConstraintViolationException.class);
         validateRootCause(() -> service.create(new User(null, "User", "mail@yandex.ru", "  ", Role.USER)), ConstraintViolationException.class);
