@@ -64,13 +64,13 @@ public class JdbcUserRepository extends AbstractJdbcRepository<User> implements 
     @Override
     public User get(int id) {
         List<User> users = jdbcTemplate.query("SELECT * FROM users WHERE id=?", ROW_MAPPER, id);
-        return setRoles(DataAccessUtils.singleResult(users));
+        return setRoles(users);
     }
 
     @Override
     public User getByEmail(String email) {
         List<User> users = jdbcTemplate.query("SELECT * FROM users WHERE email=?", ROW_MAPPER, email);
-        return setRoles(DataAccessUtils.singleResult(users));
+        return setRoles(users);
     }
 
     @Override
@@ -110,7 +110,8 @@ public class JdbcUserRepository extends AbstractJdbcRepository<User> implements 
         jdbcTemplate.update("DELETE FROM user_roles WHERE user_id=?", user.getId());
     }
 
-    private User setRoles(User user) {
+    private User setRoles(List<User> users) {
+        User user = DataAccessUtils.singleResult(users);
         if (user != null) {
             List<Role> roles = jdbcTemplate.query("SELECT role FROM user_roles WHERE user_id=?",
                 (resultSet, i) -> Role.valueOf(resultSet.getString("role")), user.getId()
