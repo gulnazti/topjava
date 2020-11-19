@@ -5,16 +5,12 @@ import java.util.List;
 import java.util.Set;
 import javax.validation.ConstraintViolationException;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.dao.DataAccessException;
 import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
-import ru.javawebinar.topjava.repository.JpaUtil;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import static org.junit.Assert.assertThrows;
@@ -31,21 +27,6 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
     @Autowired
     protected UserService service;
-
-    @Autowired
-    private CacheManager cacheManager;
-
-    @Autowired
-    @Lazy
-    protected JpaUtil jpaUtil;
-
-    @Before
-    public void setUp() {
-        cacheManager.getCache("users").clear();
-        if (isJpaBased()) {
-            jpaUtil.clear2ndLevelHibernateCache();
-        }
-    }
 
     @Test
     public void create() {
