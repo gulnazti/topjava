@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static ru.javawebinar.topjava.TestUtil.readListFromJsonMvcResult;
+import static ru.javawebinar.topjava.web.json.JsonUtil.writeValue;
 
 public class TestMatcher<T> {
     private final Class<T> clazz;
@@ -42,5 +44,13 @@ public class TestMatcher<T> {
 
     public ResultMatcher contentJson(Iterable<T> expected) {
         return result -> assertMatch(readListFromJsonMvcResult(result, clazz), expected);
+    }
+
+    public <T> ResultMatcher contentJsonArray(T expected) {
+        return content().json(writeValue(expected));
+    }
+
+    public ResultMatcher contentJsonOfArray(T... expected) {
+        return contentJsonArray(expected);
     }
 }
