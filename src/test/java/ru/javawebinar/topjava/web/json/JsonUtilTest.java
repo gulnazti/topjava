@@ -3,6 +3,7 @@ package ru.javawebinar.topjava.web.json;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 
 import static ru.javawebinar.topjava.MealTestData.MEAL_MATCHER;
@@ -24,6 +25,6 @@ class JsonUtilTest {
         String json = JsonUtil.writeValue(meals);
         System.out.println(json);
         List<Meal> meals = JsonUtil.readValues(json, Meal.class);
-        MEAL_MATCHER.assertMatch(meals, meals);
+        MEAL_MATCHER.assertMatch(meals, MealTestData.meals);
     }
 }
