@@ -1,4 +1,18 @@
-var ctx;
+function updateTable() {
+    $.get(ctx.ajaxUrl, updateTableWithData);
+}
+
+function setEnabled(checkbox, id) {
+    var enabled = checkbox.is(":checked");
+    $.post(ctx.ajaxUrl + id, "enabled=" + enabled)
+        .done(function () {
+            checkbox.closest('tr').attr("data-enabled", enabled);
+            successNoty("User is " + (enabled ? "enabled" : "disabled"));
+        })
+        .fail(function () {
+            checkbox.prop("checked", !enabled);
+        });
+}
 
 // $(document).ready(function () {
 $(function () {
