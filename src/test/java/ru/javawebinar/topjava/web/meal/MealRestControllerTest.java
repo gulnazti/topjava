@@ -25,7 +25,7 @@ import static ru.javawebinar.topjava.MealTestData.meal1;
 import static ru.javawebinar.topjava.MealTestData.meal5;
 import static ru.javawebinar.topjava.MealTestData.meals;
 import static ru.javawebinar.topjava.TestUtil.readFromJson;
-import static ru.javawebinar.topjava.TestUtil.userAuth;
+import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
 import static ru.javawebinar.topjava.UserTestData.user;
 import static ru.javawebinar.topjava.util.MealsUtil.createTo;
@@ -41,7 +41,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     @Test
     void get() throws Exception {
         perform(MockMvcRequestBuilders.get(REST_URL + MEAL1_ID)
-            .with(userAuth(user)))
+            .with(userHttpBasic(user)))
             .andExpect(status().isOk())
             .andDo(print())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -58,7 +58,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     @Test
     void delete() throws Exception {
         perform(MockMvcRequestBuilders.delete(REST_URL + MEAL1_ID)
-            .with(userAuth(user)))
+            .with(userHttpBasic(user)))
             .andExpect(status().isNoContent());
         assertThrows(NotFoundException.class, () -> mealService.get(MEAL1_ID, USER_ID));
     }
@@ -69,7 +69,7 @@ class MealRestControllerTest extends AbstractControllerTest {
         perform(MockMvcRequestBuilders.put(REST_URL + MEAL1_ID)
             .contentType(MediaType.APPLICATION_JSON)
             .content(JsonUtil.writeValue(updated))
-            .with(userAuth(user)))
+            .with(userHttpBasic(user)))
             .andExpect(status().isNoContent());
 
         MEAL_MATCHER.assertMatch(mealService.get(MEAL1_ID, USER_ID), updated);
@@ -81,7 +81,7 @@ class MealRestControllerTest extends AbstractControllerTest {
         ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
             .contentType(MediaType.APPLICATION_JSON)
             .content(JsonUtil.writeValue(newMeal))
-            .with(userAuth(user)));
+            .with(userHttpBasic(user)));
 
         Meal created = readFromJson(action, Meal.class);
         int newId = created.id();
@@ -93,7 +93,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     @Test
     void getAll() throws Exception {
         perform(MockMvcRequestBuilders.get(REST_URL)
-            .with(userAuth(user)))
+            .with(userHttpBasic(user)))
             .andExpect(status().isOk())
             .andDo(print())
             .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
@@ -105,7 +105,7 @@ class MealRestControllerTest extends AbstractControllerTest {
         perform(MockMvcRequestBuilders.get(REST_URL + "filter")
             .param("startDate", "2020-01-30").param("startTime", "07:00")
             .param("endDate", "2020-01-31").param("endTime", "11:00")
-            .with(userAuth(user)))
+            .with(userHttpBasic(user)))
             .andExpect(status().isOk())
             .andDo(print())
             .andExpect(MEAL_TO_MATCHER.contentJson(createTo(meal5, true), createTo(meal1, false)));
@@ -114,7 +114,7 @@ class MealRestControllerTest extends AbstractControllerTest {
     @Test
     void getBetweenAll() throws Exception {
         perform(MockMvcRequestBuilders.get(REST_URL + "filter?startDate=&endTime=")
-            .with(userAuth(user)))
+            .with(userHttpBasic(user)))
             .andExpect(status().isOk())
             .andExpect(MEAL_TO_MATCHER.contentJson(getTos(meals, user.getCaloriesPerDay())));
     }
