@@ -95,7 +95,7 @@ endDate.datetimepicker({
 startTime.datetimepicker({
     datepicker: false,
     format: 'H:i',
-    formatDate: 'H:i',
+    formatTime: 'H:i',
     onShow: function (ct) {
         this.setOptions({
             maxTime: endTime.val() ? endTime.val() : false
@@ -106,7 +106,7 @@ startTime.datetimepicker({
 endTime.datetimepicker({
     datepicker: false,
     format: 'H:i',
-    formatDate: 'H:i',
+    formatTime: 'H:i',
     onShow: function (ct) {
         this.setOptions({
             minTime: startTime.val() ? startTime.val() : false
