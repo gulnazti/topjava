@@ -1,8 +1,11 @@
 package ru.javawebinar.topjava.util;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.validation.*;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import ru.javawebinar.topjava.HasId;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
@@ -72,5 +75,12 @@ public class ValidationUtil {
             result = cause;
         }
         return result;
+    }
+
+    public static ResponseEntity<String> getResultErrors(BindingResult result) {
+        String errorFieldsMsg = result.getFieldErrors().stream()
+            .map(fe -> String.format("[%s] %s", fe.getField(), fe.getDefaultMessage()))
+            .collect(Collectors.joining("<br>"));
+        return ResponseEntity.unprocessableEntity().body(errorFieldsMsg);
     }
 }
