@@ -4,8 +4,14 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import ru.javawebinar.topjava.MealTestData;
+import ru.javawebinar.topjava.UserTestData;
 import ru.javawebinar.topjava.model.Meal;
+import ru.javawebinar.topjava.model.User;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static ru.javawebinar.topjava.MealTestData.MEAL_MATCHER;
 import static ru.javawebinar.topjava.MealTestData.adminMeal1;
 import static ru.javawebinar.topjava.MealTestData.meals;
@@ -26,5 +32,16 @@ class JsonUtilTest {
         System.out.println(json);
         List<Meal> meals = JsonUtil.readValues(json, Meal.class);
         MEAL_MATCHER.assertMatch(meals, MealTestData.meals);
+    }
+
+    @Test
+    void writeOnlyAccess() throws Exception {
+        String json = JsonUtil.writeValue(UserTestData.user);
+        System.out.println(json);
+        assertThat(json, not(containsString("password")));
+        String jsonWithPass = UserTestData.jsonWithPassword(UserTestData.user, "newPass");
+        System.out.println(jsonWithPass);
+        User user = JsonUtil.readValue(jsonWithPass, User.class);
+        assertEquals(user.getPassword(), "newPass");
     }
 }
