@@ -5,7 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import ru.javawebinar.topjava.UserTestData;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
@@ -24,7 +25,11 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_MATCHER;
 import static ru.javawebinar.topjava.UserTestData.USER_WITH_MEALS_MATCHER;
 import static ru.javawebinar.topjava.UserTestData.admin;
+import static ru.javawebinar.topjava.UserTestData.getNew;
+import static ru.javawebinar.topjava.UserTestData.getUpdated;
+import static ru.javawebinar.topjava.UserTestData.jsonWithPassword;
 import static ru.javawebinar.topjava.UserTestData.user;
+import static ru.javawebinar.topjava.util.ValidationUtil.DUPLICATE_EMAIL_CODE;
 
 class AdminRestControllerTest extends AbstractControllerTest {
 
@@ -93,23 +98,49 @@ class AdminRestControllerTest extends AbstractControllerTest {
 
     @Test
     void update() throws Exception {
-        User updated = UserTestData.getUpdated();
+        User updated = getUpdated();
         perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(admin))
-                .content(JsonUtil.writeValue(updated)))
+                .content(jsonWithPassword(updated, updated.getPassword())))
                 .andExpect(status().isNoContent());
 
         USER_MATCHER.assertMatch(userService.get(USER_ID), updated);
     }
 
     @Test
+    void updateNotValid() throws Exception {
+        User updated = getUpdated();
+        updated.setName("");
+        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(userHttpBasic(admin))
+            .content(JsonUtil.writeValue(updated)))
+            .andDo(print())
+            .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateDuplicate() throws Exception {
+        User updated = getUpdated();
+        updated.setEmail(admin.getEmail());
+        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(userHttpBasic(admin))
+            .content(jsonWithPassword(updated, updated.getPassword())))
+            .andDo(print())
+            .andExpect(status().isConflict())
+            .andExpect(getJsonMessage(DUPLICATE_EMAIL_CODE));
+    }
+
+    @Test
     void createWithLocation() throws Exception {
-        User newUser = UserTestData.getNew();
+        User newUser = getNew();
         ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(admin))
-                .content(UserTestData.jsonWithPassword(newUser, "newPass")))
+                .content(jsonWithPassword(newUser, "newPass")))
                 .andExpect(status().isCreated());
 
         User created = readFromJson(action, User.class);
@@ -117,6 +148,32 @@ class AdminRestControllerTest extends AbstractControllerTest {
         newUser.setId(newId);
         USER_MATCHER.assertMatch(created, newUser);
         USER_MATCHER.assertMatch(userService.get(newId), newUser);
+    }
+
+    @Test
+    void createNotValid() throws Exception {
+        User newUser = getNew();
+        newUser.setName("");
+        perform(MockMvcRequestBuilders.post(REST_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(userHttpBasic(admin))
+            .content(JsonUtil.writeValue(newUser)))
+            .andDo(print())
+            .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void createDuplicate() throws Exception {
+        User newUser = getNew();
+        newUser.setEmail(user.getEmail());
+        perform(MockMvcRequestBuilders.post(REST_URL)
+            .contentType(MediaType.APPLICATION_JSON)
+            .with(userHttpBasic(admin))
+            .content(jsonWithPassword(newUser, newUser.getPassword())))
+            .andDo(print())
+            .andExpect(status().isConflict())
+            .andExpect(getJsonMessage(DUPLICATE_EMAIL_CODE));;
     }
 
     @Test

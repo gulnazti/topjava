@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.to.UserTo;
@@ -22,6 +24,7 @@ import static ru.javawebinar.topjava.UserTestData.USER_MATCHER;
 import static ru.javawebinar.topjava.UserTestData.USER_WITH_MEALS_MATCHER;
 import static ru.javawebinar.topjava.UserTestData.admin;
 import static ru.javawebinar.topjava.UserTestData.user;
+import static ru.javawebinar.topjava.util.ValidationUtil.DUPLICATE_EMAIL_CODE;
 import static ru.javawebinar.topjava.web.user.ProfileRestController.REST_URL;
 
 class ProfileRestControllerTest extends AbstractControllerTest {
@@ -70,6 +73,28 @@ class ProfileRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    void registerNotValid() throws Exception {
+        UserTo newTo = new UserTo(null, "", "", "newPassword", 1500);
+        perform(MockMvcRequestBuilders.post(REST_URL + "/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(JsonUtil.writeValue(newTo)))
+            .andDo(print())
+            .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void registerDuplicate() throws Exception {
+        UserTo newTo = new UserTo(null, "newName", user.getEmail(), "newPassword", 1500);
+        perform(MockMvcRequestBuilders.post(REST_URL + "/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(JsonUtil.writeValue(newTo)))
+            .andDo(print())
+            .andExpect(status().isConflict())
+            .andExpect(getJsonMessage(DUPLICATE_EMAIL_CODE));
+    }
+
+    @Test
     void update() throws Exception {
         UserTo updatedTo = new UserTo(null, "newName", "newemail@ya.ru", "newPassword", 1500);
         perform(MockMvcRequestBuilders.put(REST_URL).contentType(MediaType.APPLICATION_JSON)
@@ -79,6 +104,28 @@ class ProfileRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isNoContent());
 
         USER_MATCHER.assertMatch(userService.get(USER_ID), UserUtil.updateFromTo(new User(user), updatedTo));
+    }
+
+    @Test
+    void updateNotValid() throws Exception {
+        UserTo updatedTo = new UserTo(null, "", "", "newPassword", 1500);
+        perform(MockMvcRequestBuilders.put(REST_URL).contentType(MediaType.APPLICATION_JSON)
+            .with(userHttpBasic(user))
+            .content(JsonUtil.writeValue(updatedTo)))
+            .andDo(print())
+            .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void updateDuplicate() throws Exception {
+        UserTo updatedTo = new UserTo(null, "newName", admin.getEmail(), "newPassword", 1500);
+        perform(MockMvcRequestBuilders.put(REST_URL).contentType(MediaType.APPLICATION_JSON)
+            .with(userHttpBasic(user))
+            .content(JsonUtil.writeValue(updatedTo)))
+            .andDo(print())
+            .andExpect(status().isConflict())
+            .andExpect(getJsonMessage(DUPLICATE_EMAIL_CODE));;
     }
 
     @Test

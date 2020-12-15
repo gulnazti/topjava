@@ -4,13 +4,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.validation.*;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import ru.javawebinar.topjava.HasId;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 public class ValidationUtil {
+
+    public static final String DUPLICATE_EMAIL_CODE = "error.duplicateEmail";
+    public static final String DUPLICATE_DATETIME_CODE = "error.duplicateDatetime";
 
     private static final Validator validator;
 
@@ -78,11 +80,9 @@ public class ValidationUtil {
         return result;
     }
 
-    public static ResponseEntity<String> getErrorResponse(BindingResult result) {
-        return ResponseEntity.unprocessableEntity().body(
-                result.getFieldErrors().stream()
-                        .map(fe -> String.format("[%s] %s", fe.getField(), fe.getDefaultMessage()))
-                        .collect(Collectors.joining("<br>"))
-        );
+    public static String getErrorsString(BindingResult result) {
+        return result.getFieldErrors().stream()
+            .map(fe -> String.format("[%s] %s", fe.getField(), fe.getDefaultMessage()))
+            .collect(Collectors.joining("<br>"));
     }
 }

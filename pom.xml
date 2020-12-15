@@ -32,6 +32,7 @@
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <assertj.version>3.17.2</assertj.version>
         <hamcrest.version>2.2</hamcrest.version>
+        <jsonpath.version>2.5.0</jsonpath.version>
 
         <!-- Hibernate -->
         <hibernate.version>5.4.22.Final</hibernate.version>
@@ -322,6 +323,13 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jayway.jsonpath</groupId>
+            <artifactId>json-path</artifactId>
+            <version>${jsonpath.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
