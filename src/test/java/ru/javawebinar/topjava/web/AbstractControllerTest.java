@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 
 import org.junit.jupiter.api.Assumptions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
@@ -49,7 +50,7 @@ public abstract class AbstractControllerTest {
     private WebApplicationContext webApplicationContext;
 
     @Autowired
-    private MessageResolver messageResolver;
+    private MessageSourceAccessor messages;
 
     public void assumeDataJpa() {
         Assumptions.assumeTrue(env.acceptsProfiles(org.springframework.core.env.Profiles.of(Profiles.DATAJPA)), "DATA-JPA only");
@@ -69,7 +70,7 @@ public abstract class AbstractControllerTest {
     }
 
     protected ResultMatcher getJsonMessage(String code) {
-        return jsonPath("$.detail").value(messageResolver.getMessage(code));
+        return jsonPath("$.detail").value(messages.getMessage(code));
     }
 
     protected ResultMatcher getErrorType(ErrorType errorType) {

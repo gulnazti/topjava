@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -43,7 +44,7 @@ public class ExceptionInfoHandler {
         "unique_user_datetime", DUPLICATE_DATETIME_CODE);
 
     @Autowired
-    private MessageResolver messageResolver;
+    private MessageSourceAccessor messages;
 
     //  http://stackoverflow.com/a/22358422/548473
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -62,7 +63,7 @@ public class ExceptionInfoHandler {
             .findAny();
 
         return error.map(entry -> logAndGetErrorInfo(req, e, true, DATA_ERROR,
-            messageResolver.getMessage(entry.getValue())
+            messages.getMessage(entry.getValue())
         )).orElseGet(() -> logAndGetErrorInfo(req, e, true, DATA_ERROR));
     }
 
@@ -93,7 +94,7 @@ public class ExceptionInfoHandler {
         } else {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
-        return new ErrorInfo(req.getRequestURL(), errorType, messageResolver.getMessage(errorType.getCode()),
+        return new ErrorInfo(req.getRequestURL(), errorType, messages.getMessage(errorType.getCode()),
             errors.length != 0 ? errors : new String[]{rootCause.getLocalizedMessage()});
     }
 }
