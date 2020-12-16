@@ -12,10 +12,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,7 +26,7 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.DUPLICATE_DATETIME_CODE;
 import static ru.javawebinar.topjava.util.ValidationUtil.DUPLICATE_EMAIL_CODE;
-import static ru.javawebinar.topjava.util.ValidationUtil.getErrorsString;
+import static ru.javawebinar.topjava.util.ValidationUtil.getErrors;
 import static ru.javawebinar.topjava.util.ValidationUtil.getRootCause;
 import static ru.javawebinar.topjava.util.exception.ErrorType.APP_ERROR;
 import static ru.javawebinar.topjava.util.exception.ErrorType.DATA_ERROR;
@@ -51,7 +49,7 @@ public class ExceptionInfoHandler {
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     @ExceptionHandler(NotFoundException.class)
     public ErrorInfo handleError(HttpServletRequest req, NotFoundException e) {
-        return logAndGetErrorInfo(req, e, false, DATA_NOT_FOUND, null);
+        return logAndGetErrorInfo(req, e, false, DATA_NOT_FOUND);
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)  // 409
@@ -63,41 +61,39 @@ public class ExceptionInfoHandler {
             .filter(entry -> errorMsg.contains(entry.getKey()))
             .findAny();
 
-        return logAndGetErrorInfo(req, e, true, DATA_ERROR,
-            error.map(entry -> messageResolver.getMessage(entry.getValue())).orElse(null)
-        );
+        return error.map(entry -> logAndGetErrorInfo(req, e, true, DATA_ERROR,
+            messageResolver.getMessage(entry.getValue())
+        )).orElseGet(() -> logAndGetErrorInfo(req, e, true, DATA_ERROR));
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
     @ExceptionHandler({IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
     public ErrorInfo illegalRequestDataError(HttpServletRequest req, Exception e) {
-        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, null);
+        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
-    @ExceptionHandler({BindException.class, MethodArgumentNotValidException.class})
-    public ErrorInfo bindingError(HttpServletRequest req, Exception e) {
-        BindingResult result = e instanceof BindException
-                               ? ((BindException) e).getBindingResult()
-                               : ((MethodArgumentNotValidException) e).getBindingResult();
-
-        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, getErrorsString(result));
+    @ExceptionHandler({BindException.class})
+    public ErrorInfo bindingError(HttpServletRequest req, BindException e) {
+        BindingResult result = e.getBindingResult();
+        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR, getErrors(result));
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public ErrorInfo handleError(HttpServletRequest req, Exception e) {
-        return logAndGetErrorInfo(req, e, true, APP_ERROR, null);
+        return logAndGetErrorInfo(req, e, true, APP_ERROR);
     }
 
     //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
-    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType, String errors) {
+    private ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType, String... errors) {
         Throwable rootCause = getRootCause(e);
         if (logException) {
             log.error(errorType + " at request " + req.getRequestURL(), rootCause);
         } else {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
-        return new ErrorInfo(req.getRequestURL(), errorType, StringUtils.hasText(errors) ? errors : rootCause.toString());
+        return new ErrorInfo(req.getRequestURL(), errorType, messageResolver.getMessage(errorType.getCode()),
+            errors.length != 0 ? errors : new String[]{rootCause.getLocalizedMessage()});
     }
 }

@@ -1,7 +1,6 @@
 package ru.javawebinar.topjava.util;
 
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.validation.*;
 
 import org.springframework.validation.BindingResult;
@@ -80,9 +79,9 @@ public class ValidationUtil {
         return result;
     }
 
-    public static String getErrorsString(BindingResult result) {
+    public static String[] getErrors(BindingResult result) {
         return result.getFieldErrors().stream()
             .map(fe -> String.format("[%s] %s", fe.getField(), fe.getDefaultMessage()))
-            .collect(Collectors.joining("<br>"));
+            .toArray(String[]::new);
     }
 }

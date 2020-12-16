@@ -30,6 +30,8 @@ import static ru.javawebinar.topjava.UserTestData.getUpdated;
 import static ru.javawebinar.topjava.UserTestData.jsonWithPassword;
 import static ru.javawebinar.topjava.UserTestData.user;
 import static ru.javawebinar.topjava.util.ValidationUtil.DUPLICATE_EMAIL_CODE;
+import static ru.javawebinar.topjava.util.exception.ErrorType.DATA_ERROR;
+import static ru.javawebinar.topjava.util.exception.ErrorType.VALIDATION_ERROR;
 
 class AdminRestControllerTest extends AbstractControllerTest {
 
@@ -117,7 +119,8 @@ class AdminRestControllerTest extends AbstractControllerTest {
             .with(userHttpBasic(admin))
             .content(JsonUtil.writeValue(updated)))
             .andDo(print())
-            .andExpect(status().isUnprocessableEntity());
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(getErrorType(VALIDATION_ERROR));
     }
 
     @Test
@@ -131,7 +134,8 @@ class AdminRestControllerTest extends AbstractControllerTest {
             .content(jsonWithPassword(updated, updated.getPassword())))
             .andDo(print())
             .andExpect(status().isConflict())
-            .andExpect(getJsonMessage(DUPLICATE_EMAIL_CODE));
+            .andExpect(getJsonMessage(DUPLICATE_EMAIL_CODE))
+            .andExpect(getErrorType(DATA_ERROR));
     }
 
     @Test
@@ -159,7 +163,8 @@ class AdminRestControllerTest extends AbstractControllerTest {
             .with(userHttpBasic(admin))
             .content(JsonUtil.writeValue(newUser)))
             .andDo(print())
-            .andExpect(status().isUnprocessableEntity());
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(getErrorType(VALIDATION_ERROR));
     }
 
     @Test
@@ -173,7 +178,8 @@ class AdminRestControllerTest extends AbstractControllerTest {
             .content(jsonWithPassword(newUser, newUser.getPassword())))
             .andDo(print())
             .andExpect(status().isConflict())
-            .andExpect(getJsonMessage(DUPLICATE_EMAIL_CODE));;
+            .andExpect(getJsonMessage(DUPLICATE_EMAIL_CODE))
+            .andExpect(getErrorType(DATA_ERROR));
     }
 
     @Test

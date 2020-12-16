@@ -17,6 +17,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 import ru.javawebinar.topjava.AllActiveProfileResolver;
 import ru.javawebinar.topjava.Profiles;
+import ru.javawebinar.topjava.util.exception.ErrorType;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -69,5 +70,9 @@ public abstract class AbstractControllerTest {
 
     protected ResultMatcher getJsonMessage(String code) {
         return jsonPath("$.detail").value(messageResolver.getMessage(code));
+    }
+
+    protected ResultMatcher getErrorType(ErrorType errorType) {
+        return jsonPath("$.type").value(errorType.name());
     }
 }

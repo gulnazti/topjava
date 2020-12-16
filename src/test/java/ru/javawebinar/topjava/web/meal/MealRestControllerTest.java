@@ -35,6 +35,8 @@ import static ru.javawebinar.topjava.UserTestData.user;
 import static ru.javawebinar.topjava.util.MealsUtil.createTo;
 import static ru.javawebinar.topjava.util.MealsUtil.getTos;
 import static ru.javawebinar.topjava.util.ValidationUtil.DUPLICATE_DATETIME_CODE;
+import static ru.javawebinar.topjava.util.exception.ErrorType.DATA_ERROR;
+import static ru.javawebinar.topjava.util.exception.ErrorType.VALIDATION_ERROR;
 
 class MealRestControllerTest extends AbstractControllerTest {
 
@@ -102,7 +104,8 @@ class MealRestControllerTest extends AbstractControllerTest {
             .content(JsonUtil.writeValue(updated))
             .with(userHttpBasic(user)))
             .andDo(print())
-            .andExpect(status().isUnprocessableEntity());
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(getErrorType(VALIDATION_ERROR));
     }
 
     @Test
@@ -116,7 +119,8 @@ class MealRestControllerTest extends AbstractControllerTest {
             .with(userHttpBasic(user)))
             .andDo(print())
             .andExpect(status().isConflict())
-            .andExpect(getJsonMessage(DUPLICATE_DATETIME_CODE));
+            .andExpect(getJsonMessage(DUPLICATE_DATETIME_CODE))
+            .andExpect(getErrorType(DATA_ERROR));
     }
 
     @Test
@@ -143,7 +147,8 @@ class MealRestControllerTest extends AbstractControllerTest {
             .content(JsonUtil.writeValue(newMeal))
             .with(userHttpBasic(user)))
             .andDo(print())
-            .andExpect(status().isUnprocessableEntity());
+            .andExpect(status().isUnprocessableEntity())
+            .andExpect(getErrorType(VALIDATION_ERROR));
     }
 
     @Test
@@ -157,7 +162,8 @@ class MealRestControllerTest extends AbstractControllerTest {
             .with(userHttpBasic(user)))
             .andDo(print())
             .andExpect(status().isConflict())
-            .andExpect(getJsonMessage(DUPLICATE_DATETIME_CODE));
+            .andExpect(getJsonMessage(DUPLICATE_DATETIME_CODE))
+            .andExpect(getErrorType(DATA_ERROR));
     }
 
     @Test

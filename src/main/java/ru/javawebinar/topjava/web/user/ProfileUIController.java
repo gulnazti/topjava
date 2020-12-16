@@ -62,6 +62,7 @@ public class ProfileUIController extends AbstractUserController {
             }
             catch (DataIntegrityViolationException e) {
                 result.rejectValue("email", DUPLICATE_EMAIL_CODE);
+                model.addAttribute("register", true);
                 return "profile";
             }
         }
