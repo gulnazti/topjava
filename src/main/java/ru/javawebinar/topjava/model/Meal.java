@@ -12,9 +12,12 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.validator.constraints.Range;
+import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.format.annotation.DateTimeFormat;
 import ru.javawebinar.topjava.View;
 import ru.javawebinar.topjava.util.DateTimeUtil;
+
+import static org.hibernate.validator.constraints.SafeHtml.WhiteListType.NONE;
 
 @NamedQueries({
     @NamedQuery(name = Meal.ALL_SORTED, query = "SELECT m FROM Meal m WHERE m.user.id=:userId ORDER BY m.dateTime DESC"),
@@ -41,6 +44,7 @@ public class Meal extends AbstractBaseEntity {
     @Column(name = "description", nullable = false)
     @NotBlank
     @Size(min = 2, max = 120)
+    @SafeHtml(groups = {View.Web.class}, whitelistType = NONE)
     private String description;
 
     @Column(name = "calories", nullable = false)
